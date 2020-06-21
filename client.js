@@ -16,31 +16,15 @@ var pingPort = 30554; //port where the script will ping
 var newConnectionsPort = 30555; //port where an SSH/VPN/Service app should connect waiting for the incoming data!
 var clientPort = 9071; //port where the server should try to connect!
 var isConnectedClient = false; //poor check-in to avoid other connections if already i'm connected
-//and now some functions!
-function checkPort(port) {
-    //this bitch here will check if an port is open, return true if true, return false if false
-    var testPortServer = net.createServer();
-    testPortServer.listen(port);
-    testPortServer.on('error', function(){
-        testPortServer.close();
-        return true;
-    });
-    return false;
-}
-//well, basic check
-if(checkPort(newConnectionsPort)) {
-    //checking if there isn't a port conflict!
-    //but in case of yes
-    console.log("[ERROR] - Port " + newConnectionsPort + " is already in use, please specify an different one.");
+//UPDATE 21/06/2020... rewriting this section
+//starting the server where it will be listening incoming connections to an app (VPN/HTTP Injector-Custom)
+const connectionsServer = net.createServer();
+connectionsServer.on('error', function(error) {
+    //if there's an error while powering up this server, then we display the error and exit!
+    connectionsServer.close();
+    console.log("[ERROR] - An error occurred at connectionsServer instance, code: " + error.code);
     process.exit();
-}
-if(checkPort(clientPort)) {
-    //checking if there isn't a port conflict!
-    //but in case of yes
-    console.log("[ERROR] - Port " + newConnectionsPort + " is already in use, please specify an different one.");
-    process.exit();
-}
-//its pointless to check pingPort (?)
-//seems like YES
-const mainClient = net.createServer();
-//uhh
+});
+connectionsServer.listen(newConnectionsPort, function(){
+    console.log("[INFO] - Waiting for incoming connections!");
+});
