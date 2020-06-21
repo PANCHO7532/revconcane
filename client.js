@@ -19,6 +19,18 @@ var isConnectedClient = false; //poor check-in to avoid other connections if alr
 //UPDATE 21/06/2020... rewriting this section
 //starting the server where it will be listening incoming connections to an app (VPN/HTTP Injector-Custom)
 const connectionsServer = net.createServer();
+connectionsServer.on('connection', function(socket) {
+    //so we received a new connection aaand we have a socket
+    console.log("[INFO] - Connection received from " + socket.remoteAddress + ":" + socket.remotePort);
+    //let's ping the server
+    socket.write("HTTP/1.1 102 Sending server handshake...\r\n"); //informing that we are pinging it lol
+    socket.vcon = net.createConnection({host: destServer, port: pingPort});
+    socket.vcon.on('error', function(error){
+        socket.write("HTTP/1.1 102 " + error.code + ", server started!");
+        delete socket.vcon;
+    });
+
+});
 connectionsServer.on('error', function(error) {
     //if there's an error while powering up this server, then we display the error and exit!
     connectionsServer.close();
