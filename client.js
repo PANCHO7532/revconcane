@@ -27,10 +27,20 @@ function checkPort(port) {
     });
     return false;
 }
-const mainClient = net.createServer();
+//well, basic check
 if(checkPort(newConnectionsPort)) {
     //checking if there isn't a port conflict!
     //but in case of yes
     console.log("[ERROR] - Port " + newConnectionsPort + " is already in use, please specify an different one.");
     process.exit();
 }
+if(checkPort(clientPort)) {
+    //checking if there isn't a port conflict!
+    //but in case of yes
+    console.log("[ERROR] - Port " + newConnectionsPort + " is already in use, please specify an different one.");
+    process.exit();
+}
+//its pointless to check pingPort (?)
+//seems like YES
+const mainClient = net.createServer();
+//uhh
