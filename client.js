@@ -90,17 +90,40 @@ function parseRemoteAddr(raddr) {
     }
 }
 //UPDATE 21/06/2020... rewriting this section
+//making the server if we detected some event emitted lol
+connectionHandler.on('startServer', function(socket){
+    //checking if there's already some port active
+    var checkPort = net.createConnection({host: "127.0.0.1", port: clientPort});
+    checkPort.on('connect', function(){
+        console.log("[ERROR] - Port " + clientPort + " is being used by another application, please choose a new one!");
+        process.exit();
+    })
+    checkPort.on('error', function(){
+        //empty function just... meh
+        //in case if this works somehow
+        if(clientDebugStatus) {
+            socket.write("HTTP/1.1 102 External port server started! Waiting for incoming connections...\r\n");
+        }
+    });
+});
 //starting the server where it will be listening incoming connections to an app (VPN/HTTP Injector-Custom)
 const connectionsServer = net.createServer();
 connectionsServer.on('connection', function(socket) {
     //so we received a new connection aaand we have a socket
-    console.log("[INFO] - Connection received from " + socket.remoteAddress + ":" + socket.remotePort);
+    console.log("[INFO] - Connection received from " + parseRemoteAddr(socket.remoteAddress) + ":" + socket.remotePort);
     //let's ping the server
-    socket.write("HTTP/1.1 102 Sending server handshake...\r\n"); //informing that we are pinging it lol
+    if(clientDebugStatus) {
+        socket.write("HTTP/1.1 102 Sending server handshake...\r\n"); //informing that we are pinging it lol
+    }
     socket.vcon = net.createConnection({host: destServer, port: pingPort});
     socket.vcon.on('error', function(error){
-        socket.write("HTTP/1.1 102 " + error.code + ", server started!");
-        socket.vcon.close();
+        if(clientDebugStatus) {
+            socket.write("HTTP/1.1 102 " + error.code + ", triggering event!\r\n");
+        }
+        socket.vcon.destroy();
+        connectionHandler.emit("startServer", socket);
+        //alright, at this point we know that the ping failed with some shady error
+        //but we start the server anyways, so, time to trigger the event!
     });
     
 });
