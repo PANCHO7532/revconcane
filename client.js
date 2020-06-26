@@ -17,7 +17,8 @@ var newConnectionsPort = 30555; //port where an SSH/VPN/Service app should conne
 var clientPort = 9071; //port where the server should try to connect!
 var isConnectedClient = false; //poor check-in to avoid other connections if already i'm connected
 var clientDebugStatus = true; //print debug messages to client
-var showHelp = false;
+var showHelp = false; //if help flag is detected, then this will go to true
+var gcwarn = true; //if we shown the garbage collector warning, then this goes to false
 //UPDATE 26/06/2020... copy-paste of some argument parsing shit from other-other-other project
 //read arguments
 for(c = 0; c < process.argv.length; c++) {
