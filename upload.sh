@@ -1,6 +1,4 @@
 #!/bin/bash
-rnd="$RANDOM"
-echo $rnd
-git add . && git commit -m $rnd
+git add . && git commit -m $RANDOM
 git push origin master
 echo "[INFO] - Upload script done!"
