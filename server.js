@@ -71,6 +71,7 @@ server.on('connection', function(socket) {
             revconn.destroy();
         });
         revconn.on('connect', function() {
+            //so, we alert somehow the client that we are here or something like that
             revconn.write(basePayload);
         })
         revconn.on('data', function(incomingData){
