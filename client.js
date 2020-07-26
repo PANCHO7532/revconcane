@@ -4,21 +4,13 @@
 *
 * Exploit restricted ISP/Network environment with open ports for access internet/services
 */
+//UPDATE 26/07/2020... rewriting this shit again before i throw it into flames
 const net = require('net');
 const event = require('events').EventEmitter;
 const inspect = require('util').inspect;
 // lets create a new event!
 // This event should be invoked on new server request i guess
 const connectionHandler = new event();
-//now some variables...
-var destServer = "localhost"; //host where all the magic should go
-var pingPort = 30554; //port where the script will ping
-var newConnectionsPort = 30555; //port where an SSH/VPN/Service app should connect waiting for the incoming data!
-var clientPort = 9071; //port where the server should try to connect!
-var isConnectedClient = false; //poor check-in to avoid other connections if already i'm connected
-var clientDebugStatus = true; //print debug messages to client
-var showHelp = false; //if help flag is detected, then this will go to true
-var gcwarn = true; //if we shown the garbage collector warning, then this goes to false
 //UPDATE 26/06/2020... copy-paste of some argument parsing shit from other-other-other project
 //read arguments
 for(c = 0; c < process.argv.length; c++) {
@@ -89,52 +81,3 @@ function parseRemoteAddr(raddr) {
         return raddr;
     }
 }
-//UPDATE 21/06/2020... rewriting this section
-//making the server if we detected some event emitted lol
-connectionHandler.on('startServer', function(socket){
-    //checking if there's already some port active
-    var checkPort = net.createConnection({host: "127.0.0.1", port: clientPort});
-    checkPort.on('connect', function(){
-        console.log("[ERROR] - Port " + clientPort + " is being used by another application, please choose a new one!");
-        process.exit();
-    })
-    checkPort.on('error', function(){
-        //empty function just... meh
-        //in case if this works somehow
-        if(clientDebugStatus) {
-            socket.write("HTTP/1.1 102 External port server started! Waiting for incoming connections...\r\n");
-        }
-    });
-});
-//starting the server where it will be listening incoming connections to an app (VPN/HTTP Injector-Custom)
-const connectionsServer = net.createServer();
-connectionsServer.on('connection', function(socket) {
-    //so we received a new connection aaand we have a socket
-    console.log("[INFO] - Connection received from " + parseRemoteAddr(socket.remoteAddress) + ":" + socket.remotePort);
-    //let's ping the server
-    if(clientDebugStatus) {
-        socket.write("HTTP/1.1 102 Sending server handshake...\r\n"); //informing that we are pinging it lol
-    }
-    socket.vcon = net.createConnection({host: destServer, port: pingPort});
-    socket.vcon.on('error', function(error){
-        if(clientDebugStatus) {
-            socket.write("HTTP/1.1 102 " + error.code + ", triggering event!\r\n");
-        }
-        socket.vcon.destroy();
-        connectionHandler.emit("startServer", socket);
-        //alright, at this point we know that the ping failed with some shady error
-        //but we start the server anyways, so, time to trigger the event!
-    });
-    
-});
-connectionsServer.on('error', function(error) {
-    //if there's an error while powering up this server, then we display the error and exit!
-    connectionsServer.close();
-    console.log("[ERROR] - An error occurred at connectionsServer instance, code: " + error.code);
-    process.exit();
-});
-connectionsServer.listen(newConnectionsPort, function(){
-    console.log("[INFO] - Incoming connections set up to port: " + newConnectionsPort);
-    console.log("[INFO] - Ping server set up to " + destServer + ":" + pingPort);
-    console.log("[INFO] - External port service set up to: " + clientPort);
-});
