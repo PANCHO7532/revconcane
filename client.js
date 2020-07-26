@@ -81,3 +81,8 @@ function parseRemoteAddr(raddr) {
         return raddr;
     }
 }
+//alright we need to document this shit somehow i guess
+//specify some events btw
+connectionHandler.on("startServer", function(someInfo) {
+   //uuh 
+});
