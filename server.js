@@ -7,9 +7,42 @@
 const net = require('net');
 const events = require('events').EventEmitter;
 const inspect = require('util').inspect;
-const serverPort = 25568;
-const clientPort = 25567;
+var serverPort = 25568;
+var clientPort = 25567;
+var dhost = "127.0.0.1";
+var dport = 8080;
 //alright we need to be more intelligent on this one, so, lets recycle some code btw
+//bcome copypasterino
+for(c = 0; c < process.argv.length; c++) {
+    switch(process.argv[c]) {
+        case "-dhost":
+            dhost = process.argv[c + 1];
+            break;
+        case "-dport":
+            dport = process.argv[c + 1];
+            break;
+        case "-mport":
+            serverPort = process.argv[c + 1];
+            break;
+        case "-cport":
+            clientPort = process.argv[c + 1];
+            break;
+    }
+}
+function gcollector() {
+    //garbage collector stuff
+    if(!global.gc && gcwarn) {
+        console.log("[WARNING] - Garbage Collector isn't enabled! Memory leaks may occur.");
+        gcwarn = false;
+        return;
+    } else if(global.gc) {
+        global.gc();
+        return;
+    } else {
+        return;
+    }
+}
+setInterval(gcollector, 1000);
 const server = net.createServer();
 server.on('connection', function(socket) {
     console.log("[INFO] - Connection received from " + socket.remoteAddress + ":" + socket.remotePort);
